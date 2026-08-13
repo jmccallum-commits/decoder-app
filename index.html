@@ -418,23 +418,19 @@ function ticketCard(t, desk){
 }
 
 function deskLogin(){
-  if(state.linkSent){
-    return `<section class="panel">
-      <p class="eyebrow">Check your inbox</p>
-      <p style="margin:0 0 4px">A sign-in link is on its way to <b>${esc(state.linkSent)}</b>.</p>
-      <p class="note">Open it on this device and you land straight on the desk. It works once, and it expires in an hour. After that this device stays signed in — you should not see this screen again.</p>
-      <button class="mini" style="width:100%" onclick="state.linkSent=null;render()">Use a different email</button>
-    </section>`;
-  }
   return `<section class="panel">
     <p class="eyebrow">Desk sign in</p>
     <div class="field">
-      <label for="em">Your email</label>
-      <input id="em" type="email" inputmode="email" autocomplete="email" placeholder="you@email.com">
+      <label for="em">Email</label>
+      <input id="em" type="email" inputmode="email" autocomplete="username" placeholder="you@email.com">
     </div>
-    <button class="go" id="inBtn">Email me a link</button>
+    <div class="field">
+      <label for="pw">Password</label>
+      <input id="pw" type="password" autocomplete="current-password">
+    </div>
+    <button class="go" id="inBtn">Sign in</button>
     ${state.error ? `<div class="err">${esc(state.error)}</div>` : ''}
-    <p class="note">No password. You get a one-tap link, and this device stays signed in afterward.</p>
+    <p class="note">This device stays signed in afterward &mdash; you should only have to do this once.</p>
   </section>`;
 }
 
@@ -447,14 +443,16 @@ function render(){
     const btn = document.getElementById('inBtn');
     if(btn) btn.onclick = async () => {
       const email = document.getElementById('em').value.trim();
-      if(!email || !email.includes('@')){ state.error = 'That does not look like an email.'; return render(); }
-      btn.disabled = true; btn.textContent = 'Sending…';
-      const { error } = await sb.auth.signInWithOtp({
-        email,
-        options: { emailRedirectTo: location.origin + '/#desk' }
-      });
-      if(error){ state.error = 'Could not send that. Try again in a minute.'; btn.disabled = false; return render(); }
-      state.error = ''; state.linkSent = email; render();
+      const password = document.getElementById('pw').value;
+      if(!email || !password){ state.error = 'Need both an email and a password.'; return render(); }
+      btn.disabled = true; btn.textContent = 'Signing in…';
+      const { data, error } = await sb.auth.signInWithPassword({ email, password });
+      if(error){ state.error = 'That did not match an account.'; btn.disabled = false; return render(); }
+      state.me = data.user.id;
+      const { data: adm } = await sb.from('admins').select('user_id').eq('user_id', state.me).maybeSingle();
+      if(!adm){ state.error = 'That account is not on the desk list.'; btn.disabled = false; return render(); }
+      state.admin = true; state.error = '';
+      await load();
     };
     return;
   }
