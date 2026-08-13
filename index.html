@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Decoder — posts, explained</title>
+<meta name="description" content="Send a post. Get it explained.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Karla:wght@400;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#151125; --ink-2:#1D1832; --stub:#241E3D; --edge:#332B54;
+    --bone:#EFEAF7; --bone-dim:#9E95BC;
+    --amber:#FFB43D; --mint:#79E2C0; --red:#FF7A6B;
+    --display:"Bricolage Grotesque","Trebuchet MS",system-ui,sans-serif;
+    --body:"Karla","Helvetica Neue",Arial,sans-serif;
+    --mono:"DM Mono",ui-monospace,"SF Mono",Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--ink);color:var(--bone);font-family:var(--body);
+    font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased;padding:0 0 96px;
+    background-image:radial-gradient(120% 60% at 50% -10%, #2A2148 0%, var(--ink) 62%);
+    background-attachment:fixed;
+  }
+  .wrap{max-width:620px;margin:0 auto;padding:0 18px}
+  header{padding:26px 0 18px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+  .mark{font-family:var(--display);font-weight:800;font-size:30px;letter-spacing:-.03em;line-height:1;margin:0}
+  .mark span{color:var(--amber)}
+  .tag{font-family:var(--mono);font-size:11px;color:var(--bone-dim);margin-top:7px}
+  .switch{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;
+    background:none;border:1px solid var(--edge);color:var(--bone-dim);
+    padding:8px 11px;border-radius:999px;cursor:pointer;white-space:nowrap;flex:none}
+  .switch:hover{color:var(--bone);border-color:var(--bone-dim)}
+  .panel{background:var(--ink-2);border:1px solid var(--edge);border-radius:16px;padding:18px;margin-bottom:26px}
+  .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--bone-dim);margin:0 0 10px}
+  label{display:block;font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--bone-dim);margin:0 0 6px}
+  input[type=text],input[type=url],input[type=email],input[type=password],textarea{
+    width:100%;background:#120F1F;border:1px solid var(--edge);border-radius:10px;
+    color:var(--bone);font-family:var(--body);font-size:16px;padding:12px 13px;resize:vertical}
+  input::placeholder,textarea::placeholder{color:#6B6288}
+  input:focus,textarea:focus,button:focus-visible,.drop:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+  .field{margin-bottom:14px}
+  .drop{border:1px dashed var(--edge);border-radius:12px;background:#120F1F;padding:20px 14px;text-align:center;
+    cursor:pointer;display:block;width:100%;color:var(--bone-dim);font-size:14px}
+  .drop strong{display:block;color:var(--bone);font-size:15px;margin-bottom:3px}
+  .drop.on{border-color:var(--amber);color:var(--bone)}
+  .thumb{position:relative;border-radius:12px;overflow:hidden;border:1px solid var(--edge)}
+  .thumb img{display:block;width:100%}
+  .thumb button{position:absolute;top:8px;right:8px;background:rgba(10,8,18,.82);border:1px solid var(--edge);
+    color:var(--bone);border-radius:999px;padding:5px 11px;font-family:var(--mono);font-size:11px;cursor:pointer}
+  .go{width:100%;background:var(--amber);color:#241703;border:0;border-radius:11px;
+    font-family:var(--display);font-weight:800;font-size:17px;padding:15px;cursor:pointer}
+  .go:disabled{opacity:.45;cursor:default}
+  .note{font-family:var(--mono);font-size:11px;color:var(--bone-dim);margin-top:10px;line-height:1.6}
+  .err{color:var(--red);font-family:var(--mono);font-size:12px;margin-top:10px}
+  h2.sec{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--bone-dim);
+    font-weight:400;margin:0 0 12px;display:flex;align-items:center;gap:10px}
+  h2.sec:after{content:"";flex:1;height:1px;background:var(--edge)}
+  .ticket{background:var(--stub);border:1px solid var(--edge);border-radius:14px;margin-bottom:14px;overflow:hidden}
+  .t-top{padding:14px 16px 13px}
+  .t-num{font-family:var(--mono);font-size:11px;color:var(--bone-dim);letter-spacing:.08em;
+    display:flex;justify-content:space-between;gap:10px;margin-bottom:9px}
+  .t-q{font-size:16px;margin:0 0 10px;word-wrap:break-word;overflow-wrap:anywhere}
+  .t-link{font-family:var(--mono);font-size:12px;color:var(--amber);text-decoration:none;word-break:break-all;
+    display:inline-block;margin-bottom:10px}
+  .t-media{border-radius:9px;overflow:hidden;border:1px solid var(--edge);margin-bottom:10px;background:#120F1F}
+  .t-media img{display:block;width:100%}
+  .t-media .ph{padding:22px;text-align:center;font-family:var(--mono);font-size:11px;color:var(--bone-dim)}
+  .perf{height:1px;background-image:linear-gradient(90deg,var(--edge) 0 6px,transparent 6px 12px);
+    background-size:12px 1px;position:relative}
+  .perf:before,.perf:after{content:"";position:absolute;top:-8px;width:16px;height:16px;border-radius:50%;
+    background:var(--ink);border:1px solid var(--edge)}
+  .perf:before{left:-9px}.perf:after{right:-9px}
+  .t-bot{padding:13px 16px 15px}
+  .meter-lab{font-family:var(--mono);font-size:11px;letter-spacing:.06em;color:var(--bone-dim);margin-bottom:7px}
+  .meter-lab b{color:var(--amber);font-weight:500}
+  .bar{height:3px;background:#171227;border-radius:2px;overflow:hidden}
+  .bar i{display:block;height:100%;background:var(--amber);transition:width 1s linear}
+  .bar.late i{background:var(--mint)}
+  .answer .who{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;
+    margin-bottom:8px;display:flex;align-items:center;gap:7px}
+  .dot{width:7px;height:7px;border-radius:50%;flex:none}
+  .human .dot{background:var(--amber)} .human .who{color:var(--amber)}
+  .robot .dot{background:var(--mint)} .robot .who{color:var(--mint)}
+  .answer p{margin:0;white-space:pre-wrap;word-wrap:break-word}
+  .answer.robot p{color:#DDF6EE}
+  .pending-note{font-family:var(--mono);font-size:11px;color:var(--bone-dim);margin-top:9px}
+  .empty{border:1px dashed var(--edge);border-radius:14px;padding:26px 18px;text-align:center;
+    color:var(--bone-dim);font-family:var(--mono);font-size:12px;line-height:1.7}
+  .send{background:none;border:1px solid var(--amber);color:var(--amber);border-radius:9px;
+    font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;
+    padding:10px 14px;cursor:pointer;margin-top:9px;width:100%}
+  .send:hover{background:var(--amber);color:#241703}
+  .mini{background:none;border:1px solid var(--edge);color:var(--bone-dim);border-radius:8px;
+    font-family:var(--mono);font-size:11px;padding:7px 11px;cursor:pointer;margin-top:9px}
+  .mini:hover{color:var(--bone)}
+  footer{text-align:center;font-family:var(--mono);font-size:11px;color:#5C5480;padding:30px 0 0;line-height:1.8}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1 class="mark">DE<span>CODER</span></h1>
+      <div class="tag" id="tagline">starting up…</div>
+    </div>
+    <button class="switch" id="modeBtn">The desk</button>
+  </header>
+  <main id="app"><div class="empty">Connecting…</div></main>
+  <footer>Human first. Machine after five minutes.<br><span id="clock"></span></footer>
+</div>
+
+<script type="module">
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+/* ======================= FILL THESE IN ======================= */
+const SUPABASE_URL      = 'https://ifvrfhiqdwyzbwiohlmn.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_GbAfD8pEHR8qIZ26msfFQw_9vCfaAay';
+/* ============================================================= */
+
+const GRACE_MS  = 5 * 60 * 1000;
+const MAX_EDGE  = 1100;
+const OWNER_NAME = 'the explainer';
+const EXPLAIN_URL = '/.netlify/functions/explain';
+
+const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const state = { rows:[], me:null, admin:false, mode:'ask', draft:null, busy:false, error:'', poked:{}, linkSent:null };
+window.state = state;
+
+const app = document.getElementById('app');
+const tagline = document.getElementById('tagline');
+const modeBtn = document.getElementById('modeBtn');
+
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmtLeft = ms => { const s = Math.max(0, Math.ceil(ms/1000)); return Math.floor(s/60)+':'+String(s%60).padStart(2,'0'); };
+
+/* signed links, one hour each, re-signed a few minutes before they lapse */
+const SIGN_SECONDS = 3600;
+const signCache = new Map();
+async function signedURL(path){
+  const hit = signCache.get(path);
+  if(hit && hit.exp - Date.now() > 5*60*1000) return hit.url;
+  const { data, error } = await sb.storage.from('posts').createSignedUrl(path, SIGN_SECONDS);
+  if(error || !data){ return null; }
+  signCache.set(path, { url: data.signedUrl, exp: Date.now() + SIGN_SECONDS*1000 });
+  return data.signedUrl;
+}
+async function fillMedia(){
+  await Promise.all(state.rows.filter(t => t.media_path).map(async t => {
+    const slot = document.getElementById('m_' + t.id);
+    if(!slot || slot.dataset.done) return;
+    const url = await signedURL(t.media_path);
+    const live = document.getElementById('m_' + t.id);
+    if(!live) return;
+    live.dataset.done = '1';
+    live.innerHTML = url
+      ? `<img loading="lazy" src="${url}" alt="Submitted post">`
+      : `<div class="ph">that image is not available</div>`;
+  }));
+}
+function agoStr(ts){
+  const m = Math.floor((Date.now() - new Date(ts).getTime())/60000);
+  if(m < 1) return 'just now';
+  if(m < 60) return m + ' min ago';
+  const h = Math.floor(m/60); if(h < 24) return h + 'h ago';
+  return Math.floor(h/24) + 'd ago';
+}
+
+/* ------------------------- boot ------------------------- */
+(async function boot(){
+  if(SUPABASE_URL.includes('YOUR-PROJECT')){
+    tagline.textContent = 'not connected yet';
+    app.innerHTML = `<div class="empty">Open index.html and paste your Supabase URL and anon key into the FILL THESE IN block near the top of the script.</div>`;
+    return;
+  }
+  let { data:{ session } } = await sb.auth.getSession();
+  if(!session){
+    const { data, error } = await sb.auth.signInAnonymously();
+    if(error){
+      app.innerHTML = `<div class="empty">Could not start a session. Turn on Anonymous sign-ins in Supabase → Auth → Providers.</div>`;
+      return;
+    }
+    session = data.session;
+  }
+  state.me = session.user.id;
+  const { data: adm } = await sb.from('admins').select('user_id').eq('user_id', state.me).maybeSingle();
+  state.admin = !!adm;
+
+  // arriving from an email link, or coming back to a device that is already signed in
+  if(location.hash.includes('desk')){
+    state.mode = 'desk';
+    history.replaceState(null, '', location.pathname);
+  }else if(state.admin){
+    state.mode = 'desk';
+  }
+
+  // a magic link swaps the session out from under us — catch it and re-check
+  sb.auth.onAuthStateChange(async (evt, s) => {
+    if(!s || s.user.id === state.me) return;
+    state.me = s.user.id;
+    const { data: a } = await sb.from('admins').select('user_id').eq('user_id', state.me).maybeSingle();
+    state.admin = !!a;
+    state.linkSent = null;
+    state.mode = state.admin ? 'desk' : 'ask';
+    if(!state.admin) state.error = 'That email is not on the desk list.';
+    await load();
+  });
+
+  await load();
+  sb.channel('tickets-live')
+    .on('postgres_changes', { event:'*', schema:'public', table:'tickets' }, load)
+    .subscribe();
+
+  setInterval(tick, 1000);
+  setInterval(load, 20000);
+})();
+
+async function load(){
+  const { data, error } = await sb.from('tickets').select('*').order('created_at', { ascending:false }).limit(200);
+  if(error){ console.error(error); return; }
+  state.rows = data || [];
+  render();
+  nudgeOverdue();
+}
+
+/* --------------------- the five minutes --------------------- */
+function tick(){
+  document.querySelectorAll('[data-due]').forEach(el => {
+    const left = +el.dataset.due - Date.now();
+    const lab = el.querySelector('.meter-lab'), bar = el.querySelector('.bar'), fill = el.querySelector('.bar i');
+    if(left > 0){
+      lab.innerHTML = `<b>${fmtLeft(left)}</b> left on the meter`;
+      fill.style.width = Math.max(0, Math.min(100, left/GRACE_MS*100)) + '%';
+    }else{
+      lab.textContent = 'meter expired · handing it to the machine';
+      bar.classList.add('late'); fill.style.width = '100%';
+    }
+  });
+  document.getElementById('clock').textContent = new Date().toLocaleTimeString([], {hour:'numeric', minute:'2-digit'});
+}
+
+function nudgeOverdue(){
+  const now = Date.now();
+  for(const t of state.rows){
+    if(t.status !== 'open') continue;
+    if(now - new Date(t.created_at).getTime() < GRACE_MS) continue;
+    if(state.poked[t.id] && now - state.poked[t.id] < 90000) continue;
+    state.poked[t.id] = now;
+    fetch(EXPLAIN_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ id:t.id }) })
+      .catch(e => console.error('explain call failed', e));
+  }
+}
+
+/* ------------------------- media ------------------------- */
+function fileToImage(file){
+  return new Promise((res, rej) => {
+    const fr = new FileReader();
+    fr.onload = () => { const im = new Image(); im.onload = () => res(im); im.onerror = () => rej(new Error('That image would not open.')); im.src = fr.result; };
+    fr.onerror = () => rej(new Error('That file would not read.'));
+    fr.readAsDataURL(file);
+  });
+}
+const canvasToBlob = c => new Promise(r => c.toBlob(r, 'image/jpeg', .78));
+async function shrink(img){
+  const sc = Math.min(1, MAX_EDGE / Math.max(img.width, img.height));
+  const c = document.createElement('canvas');
+  c.width = Math.round(img.width*sc); c.height = Math.round(img.height*sc);
+  c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+  return c;
+}
+function videoStrip(file){
+  return new Promise((res, rej) => {
+    const v = document.createElement('video');
+    v.preload = 'metadata'; v.muted = true; v.playsInline = true;
+    v.src = URL.createObjectURL(file);
+    v.onerror = () => rej(new Error('That video would not open. Paste the link instead.'));
+    v.onloadedmetadata = () => {
+      const marks = [.12,.5,.85].map(p => Math.max(.05, v.duration*p));
+      const w = 640, h = Math.round(640 * ((v.videoHeight/v.videoWidth) || .56));
+      const c = document.createElement('canvas'); c.width = w; c.height = h*3;
+      const cx = c.getContext('2d');
+      let i = 0;
+      const next = () => { if(i >= marks.length){ URL.revokeObjectURL(v.src); return res(c); } v.currentTime = marks[i]; };
+      v.onseeked = () => { cx.drawImage(v, 0, h*i, w, h); i++; next(); };
+      next();
+    };
+    setTimeout(() => rej(new Error('That video took too long. Paste the link instead.')), 20000);
+  });
+}
+async function pickFile(file){
+  state.error = '';
+  if(!file) return;
+  try{
+    state.busy = true; render();
+    let canvas;
+    if(file.type.startsWith('video/')) { canvas = await videoStrip(file); state.draft = { kind:'video' }; }
+    else if(file.type.startsWith('image/')) { canvas = await shrink(await fileToImage(file)); state.draft = { kind:'image' }; }
+    else { state.error = 'Images and videos only.'; state.busy = false; return render(); }
+    state.draft.blob = await canvasToBlob(canvas);
+    state.draft.preview = canvas.toDataURL('image/jpeg', .6);
+  }catch(e){ state.error = e.message; state.draft = null; }
+  state.busy = false; render();
+}
+
+/* ------------------------- actions ------------------------- */
+async function submit(){
+  const link = document.getElementById('link').value.trim();
+  const question = document.getElementById('q').value.trim();
+  const handle = document.getElementById('handle').value.trim();
+  if(!link && !state.draft){ state.error = 'Add a link or a screenshot so there is something to read.'; return render(); }
+  if(link && !/^https?:\/\//i.test(link)){ state.error = 'Links need to start with http:// or https://'; return render(); }
+
+  state.busy = true; state.error = ''; render();
+  let media_path = null;
+  try{
+    if(state.draft){
+      media_path = `${state.me}/${crypto.randomUUID()}.jpg`;
+      const { error } = await sb.storage.from('posts').upload(media_path, state.draft.blob, { contentType:'image/jpeg' });
+      if(error) throw new Error('The upload did not go through. Try a smaller file.');
+    }
+    const { error } = await sb.from('tickets').insert({
+      owner: state.me, handle: handle.slice(0,40), question: question.slice(0,400),
+      link: link.slice(0,500), kind: state.draft ? state.draft.kind : 'link', media_path
+    });
+    if(error) throw new Error('The ticket did not save. Try again.');
+    state.draft = null;
+  }catch(e){ state.error = e.message; }
+  state.busy = false;
+  await load();
+  document.getElementById('mine')?.scrollIntoView({ behavior:'smooth', block:'start' });
+}
+
+window.sendReply = async function(id){
+  const box = document.getElementById('r_' + id);
+  const text = box.value.trim();
+  if(!text) return;
+  const { error } = await sb.from('tickets').update({
+    answer: text, status: 'answered', answered_by: 'human', answered_at: new Date().toISOString()
+  }).eq('id', id);
+  if(error){ alert('That did not save: ' + error.message); return; }
+  await load();
+};
+window.clearDraft = () => { state.draft = null; render(); };
+window.signOut = async () => { await sb.auth.signOut(); location.reload(); };
+
+/* ------------------------- views ------------------------- */
+function askPanel(){
+  const d = state.draft;
+  return `
+  <section class="panel">
+    <p class="eyebrow">Bring the post</p>
+    <div class="field">
+      <label for="link">Link to the post</label>
+      <input id="link" type="url" inputmode="url" placeholder="https://instagram.com/p/..." autocomplete="off">
+    </div>
+    <div class="field">
+      <label>Or a screenshot / video</label>
+      ${d ? `<div class="thumb"><img src="${d.preview}" alt="Your upload"><button type="button" onclick="clearDraft()">Remove</button></div>
+             ${d.kind==='video' ? '<div class="note">Three frames pulled from your video — that is what gets read.</div>' : ''}`
+          : `<label class="drop" id="drop" tabindex="0">
+               <strong>${state.busy ? 'Reading the file…' : 'Tap to add a file'}</strong>
+               screenshots, photos, short clips
+               <input id="file" type="file" accept="image/*,video/*" hidden>
+             </label>`}
+    </div>
+    <div class="field">
+      <label for="q">What do you want to know</label>
+      <textarea id="q" rows="2" placeholder="Is this shade at me? What does the caption mean?"></textarea>
+    </div>
+    <div class="field">
+      <label for="handle">Name or handle (optional)</label>
+      <input id="handle" type="text" placeholder="@you" autocomplete="off">
+    </div>
+    <button class="go" id="goBtn" ${state.busy?'disabled':''}>Send it in</button>
+    ${state.error ? `<div class="err">${esc(state.error)}</div>` : ''}
+    <p class="note">A person answers first. If nobody gets to it in five minutes, the machine reads it for you.</p>
+  </section>`;
+}
+
+function meter(t){
+  const due = new Date(t.created_at).getTime() + GRACE_MS, left = due - Date.now();
+  return `<div data-due="${due}">
+    <div class="meter-lab">${left>0 ? `<b>${fmtLeft(left)}</b> left on the meter` : 'meter expired · handing it to the machine'}</div>
+    <div class="bar ${left>0?'':'late'}"><i style="width:${left>0?Math.max(0,Math.min(100,left/GRACE_MS*100)):100}%"></i></div>
+  </div>`;
+}
+
+function ticketCard(t, desk){
+  const mine = t.owner === state.me;
+  let bottom;
+  if(t.status === 'answered'){
+    const human = t.answered_by === 'human';
+    bottom = `<div class="answer ${human?'human':'robot'}">
+        <div class="who"><span class="dot"></span>${human ? 'Explained by ' + OWNER_NAME : 'Read by the machine'} · ${agoStr(t.answered_at)}</div>
+        <p>${esc(t.answer)}</p>
+      </div>
+      ${!human && desk ? `<div><textarea id="r_${t.id}" rows="3" placeholder="Say it properly…" style="margin-top:12px"></textarea><button class="send" onclick="sendReply('${t.id}')">Replace with my answer</button></div>` : ''}
+      ${!human && mine && !desk ? `<div class="pending-note">${OWNER_NAME} can still weigh in on this one.</div>` : ''}`;
+  }else if(t.status === 'reading'){
+    bottom = `<div class="answer robot"><div class="who"><span class="dot"></span>The machine is reading it…</div></div>`;
+  }else{
+    bottom = meter(t) + (desk ? `<div><textarea id="r_${t.id}" rows="3" placeholder="Explain it…" style="margin-top:12px"></textarea><button class="send" onclick="sendReply('${t.id}')">Send explanation</button></div>` : '');
+  }
+  return `<article class="ticket">
+    <div class="t-top">
+      <div class="t-num"><span>NO. ${String(t.num).padStart(4,'0')}${t.handle?' · '+esc(t.handle):''}</span><span>${agoStr(t.created_at)}</span></div>
+      ${t.question ? `<p class="t-q">${esc(t.question)}</p>` : `<p class="t-q" style="color:var(--bone-dim)">No question — just "what is this".</p>`}
+      ${t.link ? `<a class="t-link" href="${esc(t.link)}" target="_blank" rel="noopener">${esc(t.link)}</a>` : ''}
+      ${t.media_path ? `<div class="t-media" id="m_${t.id}"><div class="ph">loading the ${t.kind==='video'?'frames':'screenshot'}…</div></div>` : ''}
+    </div>
+    <div class="perf"></div>
+    <div class="t-bot">${bottom}</div>
+  </article>`;
+}
+
+function deskLogin(){
+  if(state.linkSent){
+    return `<section class="panel">
+      <p class="eyebrow">Check your inbox</p>
+      <p style="margin:0 0 4px">A sign-in link is on its way to <b>${esc(state.linkSent)}</b>.</p>
+      <p class="note">Open it on this device and you land straight on the desk. It works once, and it expires in an hour. After that this device stays signed in — you should not see this screen again.</p>
+      <button class="mini" style="width:100%" onclick="state.linkSent=null;render()">Use a different email</button>
+    </section>`;
+  }
+  return `<section class="panel">
+    <p class="eyebrow">Desk sign in</p>
+    <div class="field">
+      <label for="em">Your email</label>
+      <input id="em" type="email" inputmode="email" autocomplete="email" placeholder="you@email.com">
+    </div>
+    <button class="go" id="inBtn">Email me a link</button>
+    ${state.error ? `<div class="err">${esc(state.error)}</div>` : ''}
+    <p class="note">No password. You get a one-tap link, and this device stays signed in afterward.</p>
+  </section>`;
+}
+
+window.render = render;
+function render(){
+  if(state.mode === 'desk' && !state.admin){
+    tagline.textContent = 'the desk';
+    modeBtn.textContent = 'Back';
+    app.innerHTML = deskLogin();
+    const btn = document.getElementById('inBtn');
+    if(btn) btn.onclick = async () => {
+      const email = document.getElementById('em').value.trim();
+      if(!email || !email.includes('@')){ state.error = 'That does not look like an email.'; return render(); }
+      btn.disabled = true; btn.textContent = 'Sending…';
+      const { error } = await sb.auth.signInWithOtp({
+        email,
+        options: { emailRedirectTo: location.origin + '/#desk' }
+      });
+      if(error){ state.error = 'Could not send that. Try again in a minute.'; btn.disabled = false; return render(); }
+      state.error = ''; state.linkSent = email; render();
+    };
+    return;
+  }
+
+  if(state.mode === 'desk'){
+    tagline.textContent = 'the desk · everything waiting on you';
+    modeBtn.textContent = 'Back to sending';
+    const open = state.rows.filter(t => t.status !== 'answered');
+    const done = state.rows.filter(t => t.status === 'answered');
+    app.innerHTML =
+      `<h2 class="sec">On the clock (${open.length})</h2>` +
+      (open.length ? open.map(t => ticketCard(t,true)).join('') : `<div class="empty">Nothing waiting. Quiet night.</div>`) +
+      `<h2 class="sec" style="margin-top:26px">Answered (${done.length})</h2>` +
+      (done.length ? done.slice(0,25).map(t => ticketCard(t,true)).join('') : `<div class="empty">No answers yet.</div>`) +
+      `<button class="mini" style="width:100%;margin-top:18px" onclick="signOut()">Sign out of the desk</button>`;
+  }else{
+    tagline.textContent = 'send a post · get it explained';
+    modeBtn.textContent = 'The desk';
+    const mine = state.rows.filter(t => t.owner === state.me);
+    app.innerHTML = askPanel() +
+      `<div id="mine"><h2 class="sec">Your tickets</h2>` +
+      (mine.length ? mine.map(t => ticketCard(t,false)).join('')
+                   : `<div class="empty">Nothing sent yet.<br>Paste a link up top and it lands here.</div>`) + `</div>`;
+    wireForm();
+  }
+  fillMedia();
+  tick();
+}
+
+function wireForm(){
+  const f = document.getElementById('file'), drop = document.getElementById('drop');
+  if(f){
+    f.addEventListener('change', e => pickFile(e.target.files[0]));
+    drop.addEventListener('keydown', e => { if(e.key==='Enter'||e.key===' '){ e.preventDefault(); f.click(); } });
+    ['dragenter','dragover'].forEach(n => drop.addEventListener(n, e => { e.preventDefault(); drop.classList.add('on'); }));
+    ['dragleave','drop'].forEach(n => drop.addEventListener(n, e => { e.preventDefault(); drop.classList.remove('on'); }));
+    drop.addEventListener('drop', e => pickFile(e.dataTransfer.files[0]));
+  }
+  document.getElementById('goBtn').addEventListener('click', submit);
+}
+
+modeBtn.addEventListener('click', () => { state.mode = state.mode === 'desk' ? 'ask' : 'desk'; state.error=''; render(); });
+</script>
+</body>
+</html>
