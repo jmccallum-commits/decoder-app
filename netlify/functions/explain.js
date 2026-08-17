@@ -41,9 +41,9 @@ exports.handler = async (event) => {
   if (!t) return reply(404, { error: 'No such ticket' });
   if (t.status === 'answered') return reply(200, { skipped: 'already answered' });
 
-  // 2. is the meter actually expired?
+  // 2. is the meter actually expired? (unless they asked for the machine outright)
   const age = Date.now() - new Date(t.created_at).getTime();
-  if (age < GRACE) return reply(200, { skipped: 'still on the meter' });
+  if (t.answer_by !== 'ai_now' && age < GRACE) return reply(200, { skipped: 'still on the meter' });
 
   // 3. claim it — the filter on status makes this atomic, so two
   //    browsers hitting this at once cannot both get through
