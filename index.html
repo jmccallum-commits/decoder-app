@@ -88,6 +88,20 @@
   .answer p{margin:0;white-space:pre-wrap;word-wrap:break-word}
   .answer.robot p{color:#DDF6EE}
   .pending-note{font-family:var(--mono);font-size:11px;color:var(--bone-dim);margin-top:9px}
+  .thread{margin-top:14px;border-top:1px solid var(--edge);padding-top:13px}
+  .modes{display:flex;gap:8px;margin-bottom:16px}
+  .mode{flex:1;background:#120F1F;border:1px solid var(--edge);color:var(--bone-dim);
+    border-radius:10px;padding:11px 8px;cursor:pointer;
+    font-family:var(--body);font-size:14px;font-weight:600}
+  .mode.on{background:var(--amber);border-color:var(--amber);color:#241703}
+  .tag-ai{display:inline-block;font-family:var(--mono);font-size:10px;letter-spacing:.08em;
+    text-transform:uppercase;color:var(--mint);border:1px solid #2E5A4B;
+    border-radius:999px;padding:3px 8px;margin-bottom:9px}
+  .msg{margin-bottom:11px;padding:10px 12px;border-radius:11px;background:#1B1630;border:1px solid var(--edge)}
+  .msg.from-desk{background:#2A2033;border-color:#4A3A22}
+  .msg-who{font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--bone-dim);margin-bottom:5px}
+  .msg.from-desk .msg-who{color:var(--amber)}
+  .msg p{margin:0;white-space:pre-wrap;word-wrap:break-word;font-size:15px}
   .empty{border:1px dashed var(--edge);border-radius:14px;padding:26px 18px;text-align:center;
     color:var(--bone-dim);font-family:var(--mono);font-size:12px;line-height:1.7}
   .send{background:none;border:1px solid var(--amber);color:var(--amber);border-radius:9px;
@@ -128,7 +142,8 @@ const OWNER_NAME = 'the explainer';
 const EXPLAIN_URL = '/.netlify/functions/explain';
 
 const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-const state = { rows:[], me:null, admin:false, mode:'ask', draft:null, busy:false, error:'', poked:{}, linkSent:null };
+const state = { rows:[], msgs:[], me:null, admin:false, mode:'ask', ask:'explain', draft:null, busy:false, error:'', poked:{}, linkSent:null };
+window.setAsk = v => { state.ask = v; state.error=''; render(); };
 window.state = state;
 
 const app = document.getElementById('app');
@@ -213,6 +228,7 @@ function agoStr(ts){
   await load();
   sb.channel('tickets-live')
     .on('postgres_changes', { event:'*', schema:'public', table:'tickets' }, load)
+    .on('postgres_changes', { event:'*', schema:'public', table:'messages' }, load)
     .subscribe();
 
   setInterval(tick, 1000);
@@ -223,9 +239,25 @@ async function load(){
   const { data, error } = await sb.from('tickets').select('*').order('created_at', { ascending:false }).limit(200);
   if(error){ console.error(error); return; }
   state.rows = data || [];
+  const { data: msgs } = await sb.from('messages').select('*').order('created_at', { ascending:true }).limit(1000);
+  state.msgs = msgs || [];
   render();
   nudgeOverdue();
 }
+
+function threadFor(id){ return state.msgs.filter(m => m.ticket_id === id); }
+
+window.sendMsg = async function(id, role){
+  const box = document.getElementById('m_in_' + id);
+  const body = box.value.trim();
+  if(!body) return;
+  box.disabled = true;
+  const { error } = await sb.from('messages').insert({ ticket_id: id, role, body: body.slice(0,2000) });
+  box.disabled = false;
+  if(error){ alert('That did not send: ' + error.message); return; }
+  box.value = '';
+  await load();
+};
 
 /* --------------------- the five minutes --------------------- */
 function tick(){
@@ -311,7 +343,8 @@ async function submit(){
   const link = document.getElementById('link').value.trim();
   const question = document.getElementById('q').value.trim();
   const handle = document.getElementById('handle').value.trim();
-  if(!link && !state.draft){ state.error = 'Add a link or a screenshot so there is something to read.'; return render(); }
+  if(!link && !state.draft){ state.error = 'Add a screenshot so there is something to read.'; return render(); }
+  if(state.ask === 'ai_check' && !state.draft){ state.error = 'AI checks need the actual image — a link will not do it.'; return render(); }
   if(link && !/^https?:\/\//i.test(link)){ state.error = 'Links need to start with http:// or https://'; return render(); }
 
   state.busy = true; state.error = ''; render();
@@ -324,7 +357,8 @@ async function submit(){
     }
     const { error } = await sb.from('tickets').insert({
       owner: state.me, handle: handle.slice(0,40), question: question.slice(0,400),
-      link: link.slice(0,500), kind: state.draft ? state.draft.kind : 'link', media_path
+      link: link.slice(0,500), kind: state.draft ? state.draft.kind : 'link', media_path,
+      ask_type: state.ask
     });
     if(error) throw new Error('The ticket did not save. Try again.');
     state.draft = null;
@@ -352,24 +386,29 @@ function askPanel(){
   const d = state.draft;
   return `
   <section class="panel">
-    <p class="eyebrow">Bring the post</p>
-    <div class="field">
-      <label for="link">Link to the post</label>
-      <input id="link" type="url" inputmode="url" placeholder="https://instagram.com/p/..." autocomplete="off">
+    <p class="eyebrow">What are you asking</p>
+    <div class="modes">
+      <button type="button" class="mode ${state.ask==='explain'?'on':''}" onclick="setAsk('explain')">Explain it</button>
+      <button type="button" class="mode ${state.ask==='ai_check'?'on':''}" onclick="setAsk('ai_check')">Is this AI?</button>
     </div>
     <div class="field">
-      <label>Or a screenshot / video</label>
+      <label>Screenshot or clip</label>
       ${d ? `<div class="thumb"><img src="${d.preview}" alt="Your upload"><button type="button" onclick="clearDraft()">Remove</button></div>
              ${d.kind==='video' ? '<div class="note">Three frames pulled from your video — that is what gets read.</div>' : ''}`
           : `<label class="drop" id="drop" tabindex="0">
-               <strong>${state.busy ? 'Reading the file…' : 'Tap to add a file'}</strong>
+               <strong>${state.busy ? 'Reading the file…' : 'Tap to add a screenshot'}</strong>
                screenshots, photos, short clips
                <input id="file" type="file" accept="image/*,video/*" hidden>
-             </label>`}
+             </label>
+             <div class="note">Screenshots work best — Instagram and TikTok hide their posts from anything outside the app, so a link on its own usually cannot be read.</div>`}
     </div>
     <div class="field">
-      <label for="q">What do you want to know</label>
-      <textarea id="q" rows="2" placeholder="Is this shade at me? What does the caption mean?"></textarea>
+      <label for="q">${state.ask==='ai_check' ? 'Anything specific to look at' : 'What do you want to know'}</label>
+      <textarea id="q" rows="2" placeholder="${state.ask==='ai_check' ? 'The hands look off to me — is this real?' : 'Is this shade at me? What does the caption mean?'}"></textarea>
+    </div>
+    <div class="field">
+      <label for="link">Link (optional)</label>
+      <input id="link" type="url" inputmode="url" placeholder="https://instagram.com/p/..." autocomplete="off">
     </div>
     <div class="field">
       <label for="handle">Name or handle (optional)</label>
@@ -389,6 +428,24 @@ function meter(t){
   </div>`;
 }
 
+function threadBlock(t, desk){
+  const msgs = threadFor(t.id);
+  const rows = msgs.map(m => {
+    const mine = m.role === (desk ? 'desk' : 'asker');
+    const who = m.role === 'desk' ? OWNER_NAME : (m.role === 'ai' ? 'the machine' : (t.handle || 'them'));
+    return `<div class="msg ${m.role==='desk'?'from-desk':'from-asker'}">
+      <div class="msg-who">${esc(who)} · ${agoStr(m.created_at)}</div>
+      <p>${esc(m.body)}</p>
+    </div>`;
+  }).join('');
+  const role = desk ? 'desk' : 'asker';
+  return `<div class="thread">
+    ${rows}
+    <textarea id="m_in_${t.id}" rows="2" placeholder="${desk ? 'Say more…' : 'Ask a follow-up…'}"></textarea>
+    <button class="send" onclick="sendMsg('${t.id}','${role}')">Send</button>
+  </div>`;
+}
+
 function ticketCard(t, desk){
   const mine = t.owner === state.me;
   let bottom;
@@ -399,7 +456,7 @@ function ticketCard(t, desk){
         <p>${esc(t.answer)}</p>
       </div>
       ${!human && desk ? `<div><textarea id="r_${t.id}" rows="3" placeholder="Say it properly…" style="margin-top:12px"></textarea><button class="send" onclick="sendReply('${t.id}')">Replace with my answer</button></div>` : ''}
-      ${!human && mine && !desk ? `<div class="pending-note">${OWNER_NAME} can still weigh in on this one.</div>` : ''}`;
+      ${threadBlock(t, desk)}`;
   }else if(t.status === 'reading'){
     bottom = `<div class="answer robot"><div class="who"><span class="dot"></span>The machine is reading it…</div></div>`;
   }else{
@@ -408,6 +465,7 @@ function ticketCard(t, desk){
   return `<article class="ticket">
     <div class="t-top">
       <div class="t-num"><span>NO. ${String(t.num).padStart(4,'0')}${t.handle?' · '+esc(t.handle):''}</span><span>${agoStr(t.created_at)}</span></div>
+      ${t.ask_type === 'ai_check' ? `<div class="tag-ai">Is this AI?</div>` : ''}
       ${t.question ? `<p class="t-q">${esc(t.question)}</p>` : `<p class="t-q" style="color:var(--bone-dim)">No question — just "what is this".</p>`}
       ${t.link ? `<a class="t-link" href="${esc(t.link)}" target="_blank" rel="noopener">${esc(t.link)}</a>` : ''}
       ${t.media_path ? `<div class="t-media" id="m_${t.id}"><div class="ph">loading the ${t.kind==='video'?'frames':'screenshot'}…</div></div>` : ''}
