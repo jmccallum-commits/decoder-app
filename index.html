@@ -94,6 +94,7 @@
     border-radius:10px;padding:11px 8px;cursor:pointer;
     font-family:var(--body);font-size:14px;font-weight:600}
   .mode.on{background:var(--amber);border-color:var(--amber);color:#241703}
+  .mode.on.mint{background:var(--mint);border-color:var(--mint);color:#0C2B22}
   .tag-ai{display:inline-block;font-family:var(--mono);font-size:10px;letter-spacing:.08em;
     text-transform:uppercase;color:var(--mint);border:1px solid #2E5A4B;
     border-radius:999px;padding:3px 8px;margin-bottom:9px}
@@ -140,10 +141,12 @@ const GRACE_MS  = 5 * 60 * 1000;
 const MAX_EDGE  = 1100;
 const OWNER_NAME = 'the explainer';
 const EXPLAIN_URL = '/.netlify/functions/explain';
+const CHAT_URL = '/.netlify/functions/chat';
 
 const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-const state = { rows:[], msgs:[], me:null, admin:false, mode:'ask', ask:'explain', draft:null, busy:false, error:'', poked:{}, linkSent:null };
+const state = { rows:[], msgs:[], me:null, admin:false, mode:'ask', ask:'explain', who:'human', draft:null, busy:false, error:'', poked:{}, linkSent:null };
 window.setAsk = v => { state.ask = v; state.error=''; render(); };
+window.setWho = v => { state.who = v; state.error=''; render(); };
 window.state = state;
 
 const app = document.getElementById('app');
@@ -256,6 +259,12 @@ window.sendMsg = async function(id, role){
   box.disabled = false;
   if(error){ alert('That did not send: ' + error.message); return; }
   box.value = '';
+  const t = state.rows.find(x => x.id === id);
+  if(role === 'asker' && t && t.answer_by === 'ai_now'){
+    fetch(CHAT_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ ticket_id: id }) })
+      .then(() => setTimeout(load, 1500))
+      .catch(e => console.error('chat call failed', e));
+  }
   await load();
 };
 
@@ -355,12 +364,17 @@ async function submit(){
       const { error } = await sb.storage.from('posts').upload(media_path, state.draft.blob, { contentType:'image/jpeg' });
       if(error) throw new Error('The upload did not go through. Try a smaller file.');
     }
-    const { error } = await sb.from('tickets').insert({
+    const { data: made, error } = await sb.from('tickets').insert({
       owner: state.me, handle: handle.slice(0,40), question: question.slice(0,400),
       link: link.slice(0,500), kind: state.draft ? state.draft.kind : 'link', media_path,
-      ask_type: state.ask
-    });
+      ask_type: state.ask, answer_by: state.who
+    }).select('id').single();
     if(error) throw new Error('The ticket did not save. Try again.');
+    if(state.who === 'ai_now' && made){
+      fetch(EXPLAIN_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ id: made.id }) })
+        .then(() => setTimeout(load, 1500))
+        .catch(e => console.error('explain call failed', e));
+    }
     state.draft = null;
   }catch(e){ state.error = e.message; }
   state.busy = false;
@@ -414,9 +428,16 @@ function askPanel(){
       <label for="handle">Name or handle (optional)</label>
       <input id="handle" type="text" placeholder="@you" autocomplete="off">
     </div>
+    <p class="eyebrow" style="margin-top:20px">Who answers</p>
+    <div class="modes">
+      <button type="button" class="mode ${state.who==='human'?'on':''}" onclick="setWho('human')">Wait for a person</button>
+      <button type="button" class="mode ${state.who==='ai_now'?'on mint':''}" onclick="setWho('ai_now')">Answer now</button>
+    </div>
     <button class="go" id="goBtn" ${state.busy?'disabled':''}>Send it in</button>
     ${state.error ? `<div class="err">${esc(state.error)}</div>` : ''}
-    <p class="note">A person answers first. If nobody gets to it in five minutes, the machine reads it for you.</p>
+    <p class="note">${state.who==='ai_now'
+      ? 'The machine reads it straight away and keeps answering your follow-ups. A person can still step in later.'
+      : 'A person answers first. If nobody gets to it in five minutes, the machine reads it for you.'}</p>
   </section>`;
 }
 
@@ -460,7 +481,10 @@ function ticketCard(t, desk){
   }else if(t.status === 'reading'){
     bottom = `<div class="answer robot"><div class="who"><span class="dot"></span>The machine is reading it…</div></div>`;
   }else{
-    bottom = meter(t) + (desk ? `<div><textarea id="r_${t.id}" rows="3" placeholder="Explain it…" style="margin-top:12px"></textarea><button class="send" onclick="sendReply('${t.id}')">Send explanation</button></div>` : '');
+    bottom = (t.answer_by === 'ai_now'
+      ? `<div class="answer robot"><div class="who"><span class="dot"></span>The machine is reading it…</div></div>`
+      : meter(t))
+      + (desk ? `<div><textarea id="r_${t.id}" rows="3" placeholder="Explain it…" style="margin-top:12px"></textarea><button class="send" onclick="sendReply('${t.id}')">Send explanation</button></div>` : '');
   }
   return `<article class="ticket">
     <div class="t-top">
