@@ -72,29 +72,55 @@ exports.handler = async (event) => {
     } catch (e) { console.error('media fetch failed', e); }
   }
 
-  // 5. read it
-  const content = [];
-  if (media) {
-    content.push({ type: 'image', source: { type: 'base64', media_type: media.type, data: media.data } });
+  // no image means nothing to read — say so instead of guessing
+  if (!media) {
+    const ask = t.ask_type === 'ai_check'
+      ? `I cannot check this one — there is no image attached, and looking at the picture itself is the only way to do it. Send the screenshot and I will give you my read.`
+      : (t.link
+          ? `I cannot open that link — Instagram and TikTok hide their posts from anything outside the app. Send a screenshot of it and I will break down exactly what is being said.`
+          : `There is no screenshot on this one, so there is nothing for me to read. Send a screenshot of the post and I will explain it.`);
+    await rest(`tickets?id=eq.${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({
+        answer: ask,
+        status: 'answered',
+        answered_by: 'ai',
+        answered_at: new Date().toISOString()
+      })
+    });
+    return reply(200, { ok: true, noMedia: true });
   }
+
+  // 5. read it
+  const isCheck = t.ask_type === 'ai_check';
+  const content = [];
+  content.push({ type: 'image', source: { type: 'base64', media_type: media.type, data: media.data } });
   content.push({
     type: 'text',
-    text:
-`Someone sent in a social media post and wants it explained in plain language.
+    text: isCheck
+? `Someone wants to know whether this image was made or altered by AI.
+
+What they said: ${t.question || 'Is this AI?'}
+${t.kind === 'video' ? 'Attached: three frames pulled from their video, stacked top to bottom.' : 'Attached: the image in question.'}
+
+Look at it closely and give them your honest read. Cover:
+- Which way you lean: likely AI, likely real, or genuinely cannot tell.
+- The specific things you are looking at — hands and fingers, teeth, text and signage, jewellery and eyeglass frames, hairlines, background objects that merge or repeat, lighting and shadow directions that disagree, skin that is too even, edges that smear.
+- What would settle it if you cannot.
+
+Be straight about uncertainty. There is no reliable way to prove an image is AI from looking at it, and modern generators often leave no visible tells at all, so do not present a guess as a verdict. If it looks real to you, say that plainly rather than inventing doubt. End with one sentence making clear this is a read, not proof. Under 160 words.`
+: `Someone sent in a social media post and wants it explained in plain language.
 
 Their question: ${t.question || 'What does this mean?'}
 ${t.link ? 'Link they gave: ' + t.link : ''}
-${media
-  ? (t.kind === 'video'
-      ? 'Attached: three frames pulled from their video, stacked top to bottom.'
-      : 'Attached: their screenshot of the post.')
-  : 'No image was attached.'}
+${t.kind === 'video'
+  ? 'Attached: three frames pulled from their video, stacked top to bottom.'
+  : 'Attached: their screenshot of the post.'}
 
 Explain what the post is actually saying and why: the slang, the reference, the joke, the subtext, the tone. Be direct and specific. Say plainly what you cannot tell instead of guessing confidently. No greeting, no sign-off, under 140 words.`
   });
 
   const body = { model: 'claude-sonnet-4-6', max_tokens: 1000, messages: [{ role: 'user', content }] };
-  if (!media && t.link) body.tools = [{ type: 'web_search_20250305', name: 'web_search' }];
 
   let text = '';
   try {
