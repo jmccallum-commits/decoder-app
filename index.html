@@ -435,21 +435,24 @@ function agoStr(ts){
 
   await load();
   sb.channel('tickets-live')
-    .on('postgres_changes', { event:'*', schema:'public', table:'tickets' }, load)
-    .on('postgres_changes', { event:'*', schema:'public', table:'messages' }, load)
+    .on('postgres_changes', { event:'*', schema:'public', table:'tickets' }, () => load(true))
+    .on('postgres_changes', { event:'*', schema:'public', table:'messages' }, () => load(true))
     .subscribe();
 
   setInterval(tick, 1000);
-  setInterval(load, 20000);
+  setInterval(() => load(true), 20000);
 })();
 
-async function load(){
+async function load(quiet){
   const { data, error } = await sb.from('tickets').select('*').order('created_at', { ascending:false }).limit(200);
   if(error){ console.error(error); return; }
   state.rows = data || [];
   const { data: msgs } = await sb.from('messages').select('*').order('created_at', { ascending:true }).limit(1000);
   state.msgs = msgs || [];
-  render();
+  // a background poll should not yank the page out from under someone typing
+  const a = document.activeElement;
+  const typing = a && (a.tagName === 'TEXTAREA' || a.tagName === 'INPUT') && a.value;
+  if(!(quiet && typing)) render();
   nudgeOverdue();
 }
 
@@ -724,7 +727,45 @@ function deskLogin(){
 }
 
 window.render = render;
+const FORM_FIELDS = ['link','q','handle','em','pw'];
+function grabForm(){
+  const box = { threads:{} };
+  const active = document.activeElement;
+  box.focus = active && active.id ? active.id : null;
+  box.selStart = active && active.selectionStart != null ? active.selectionStart : null;
+  box.selEnd = active && active.selectionEnd != null ? active.selectionEnd : null;
+  FORM_FIELDS.forEach(id => {
+    const e = document.getElementById(id);
+    if(e) box[id] = e.value;
+  });
+  document.querySelectorAll('[id^="m_in_"], [id^="r_"]').forEach(e => {
+    if(e.value) box.threads[e.id] = e.value;
+  });
+  return box;
+}
+function putForm(box){
+  if(!box) return;
+  FORM_FIELDS.forEach(id => {
+    const e = document.getElementById(id);
+    if(e && box[id] !== undefined && box[id] !== '') e.value = box[id];
+  });
+  Object.keys(box.threads).forEach(id => {
+    const e = document.getElementById(id);
+    if(e) e.value = box.threads[id];
+  });
+  if(box.focus){
+    const e = document.getElementById(box.focus);
+    if(e){
+      e.focus({ preventScroll:true });
+      if(box.selStart != null && e.setSelectionRange){
+        try{ e.setSelectionRange(box.selStart, box.selEnd); }catch(err){}
+      }
+    }
+  }
+}
+
 function render(){
+  const keep = grabForm();
   if(state.mode === 'desk' && !state.admin){
     tagline.textContent = 'the desk';
     modeBtn.textContent = 'Back';
@@ -768,6 +809,7 @@ function render(){
     wireForm();
   }
   fillMedia();
+  putForm(keep);
   tick();
 }
 
