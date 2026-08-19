@@ -114,6 +114,143 @@
   .mini:hover{color:var(--bone)}
   footer{text-align:center;font-family:var(--mono);font-size:11px;color:#5C5480;padding:30px 0 0;line-height:1.8}
   @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+  /* ================= MOMO ================= */
+  .momo-dock{height:118px;display:grid;place-items:center;margin:2px 0 10px}
+  .momo-cap{font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--bone-dim);
+    text-align:center;margin-top:-4px;margin-bottom:14px}
+  .momo{position:relative;width:150px;height:150px;transform:scale(.62);transform-origin:50% 60%}
+  .momo *{box-sizing:border-box}
+  .momo .tail{position:absolute;bottom:8px;right:-40px;width:52px;height:96px;z-index:1;
+    transform-origin:14% 90%;transform:rotate(16deg)}
+  .momo .tail .base{position:absolute;inset:0;background:#F08A3C;border:4px solid #2A1710;
+    border-radius:26px;overflow:hidden;display:block}
+  .momo .tail .st{position:absolute;left:-4px;right:-4px;height:15px;background:#5C3620;display:block}
+  .momo .tail .st1{bottom:8px}.momo .tail .st2{bottom:36px}.momo .tail .st3{bottom:64px}
+  .momo .bod{position:absolute;bottom:0;left:50%;transform:translateX(-50%);
+    width:104px;height:70px;background:#7A4A2B;border:4px solid #2A1710;
+    border-radius:44px 44px 30px 30px;z-index:2}
+  .momo .paw{position:absolute;bottom:-2px;width:34px;height:22px;background:#7A4A2B;
+    border:4px solid #2A1710;border-radius:16px 16px 12px 12px;z-index:5}
+  .momo .paw.l{left:22px}.momo .paw.r{right:22px}
+  .momo .paw i{position:absolute;top:2px;left:50%;transform:translateX(-50%);
+    width:18px;height:8px;border-radius:9px;background:#D96F26;opacity:.55}
+  .momo .ear{position:absolute;top:-4px;width:44px;height:44px;background:#F08A3C;
+    border:4px solid #2A1710;border-radius:56% 56% 10px 56%;z-index:2}
+  .momo .ear.l{left:8px;transform:rotate(-32deg)}
+  .momo .ear.r{right:8px;transform:rotate(32deg) scaleX(-1)}
+  .momo .ear i{position:absolute;left:8px;top:10px;width:22px;height:22px;background:#FFFDF9;
+    border-radius:56% 56% 6px 56%}
+  .momo .hed{position:absolute;left:50%;top:0;transform:translateX(-50%);
+    width:136px;height:112px;background:#F08A3C;border:4px solid #2A1710;
+    border-radius:52% 52% 46% 46%;z-index:3}
+  .momo .patch{position:absolute;top:52px;width:44px;height:46px;background:#5C3620;
+    border-radius:50%;z-index:4}
+  .momo .patch.l{left:8px}.momo .patch.r{right:8px}
+  .momo .muzzle{position:absolute;left:50%;top:48px;transform:translateX(-50%);
+    width:74px;height:56px;background:#FFFDF9;border-radius:48% 48% 50% 50%;z-index:5}
+  .momo .brow{position:absolute;top:30px;width:16px;height:8px;background:#FFFDF9;
+    border-radius:8px;z-index:6}
+  .momo .brow.l{left:36px;transform:rotate(-8deg)}.momo .brow.r{right:36px;transform:rotate(8deg)}
+  .momo .face{position:absolute;inset:0;z-index:7}
+  .momo .eye{position:absolute;top:42px;width:24px;height:24px;border-radius:50%;
+    background:#FFF;border:3px solid #2A1710}
+  .momo .eye.l{left:28px}.momo .eye.r{right:28px}
+  .momo .iris{position:absolute;top:47px;width:15px;height:15px;border-radius:50%;background:#2A1710}
+  .momo .iris.l{left:33px}.momo .iris.r{right:33px}
+  .momo .shn{position:absolute;border-radius:50%;background:#FFF;z-index:8}
+  .momo .shn.a{width:6px;height:6px;top:49px}.momo .shn.b{width:3px;height:3px;top:56px}
+  .momo .shn.la{left:36px}.momo .shn.lb{left:43px}
+  .momo .shn.ra{right:41px}.momo .shn.rb{right:34px}
+  .momo .arc{position:absolute;top:48px;width:22px;height:12px;opacity:0;
+    border:0;border-top:5px solid #2A1710;border-radius:22px 22px 0 0}
+  .momo .arc.l{left:29px}.momo .arc.r{right:29px}
+  .momo .lash{position:absolute;top:54px;width:20px;height:10px;opacity:0;
+    border:0;border-bottom:4px solid #2A1710;border-radius:0 0 20px 20px}
+  .momo .lash.l{left:30px}.momo .lash.r{right:30px}
+  .momo .blush{position:absolute;top:66px;width:17px;height:9px;border-radius:50%;
+    background:#F2A0BA;opacity:0;transition:opacity .4s;z-index:8}
+  .momo .blush.l{left:18px}.momo .blush.r{right:18px}
+  .momo .nose{position:absolute;top:62px;left:50%;transform:translateX(-50%);
+    width:15px;height:11px;background:#2A1710;border-radius:45% 45% 60% 60%;z-index:9}
+  .momo .nose i{position:absolute;top:2px;left:2.5px;width:5px;height:3.5px;
+    border-radius:50%;background:#6B4A38}
+  .momo .smile{position:absolute;top:73px;left:50%;transform:translateX(-50%);
+    width:14px;height:10px;background:#4A2418;border:2.2px solid #2A1710;
+    border-radius:4px 4px 12px 12px;overflow:hidden;z-index:9;transform-origin:50% 0}
+  .momo .smile i{position:absolute;bottom:-2px;left:50%;transform:translateX(-50%);
+    width:10px;height:6.5px;border-radius:50% 50% 0 0;background:#F2A0BA}
+  .momo .curl{position:absolute;top:72px;width:5px;height:5px;border:0;
+    border-top:2.2px solid #2A1710;border-radius:5px 5px 0 0;z-index:9}
+  .momo .curl.l{left:calc(50% - 12px);transform:rotate(-18deg)}
+  .momo .curl.r{right:calc(50% - 12px);transform:rotate(18deg)}
+  .momo .zzz{position:absolute;top:-14px;right:2px;font-family:var(--mono);
+    font-size:17px;font-weight:600;color:var(--amber);opacity:0;z-index:10}
+  .momo.happy{animation:mo-hop 1.7s ease-in-out infinite}
+  .momo.happy .eye,.momo.happy .iris,.momo.happy .shn{opacity:0}
+  .momo.happy .arc{opacity:1}
+  .momo.happy .blush{opacity:.8}
+  .momo.happy .smile{transform:translateX(-50%) scale(1.2)}
+  .momo.happy .tail{animation:mo-wag 1.7s ease-in-out infinite}
+  .momo.happy .paw.l{animation:mo-pawl 1.7s ease-in-out infinite}
+  .momo.happy .paw.r{animation:mo-pawr 1.7s ease-in-out infinite}
+  .momo.drowsy{animation:mo-breathe 3.2s ease-in-out infinite}
+  .momo.drowsy .eye,.momo.drowsy .iris,.momo.drowsy .shn{opacity:0}
+  .momo.drowsy .lash{opacity:1}
+  .momo.drowsy .blush{opacity:.6}
+  .momo.drowsy .curl{opacity:0}
+  .momo.drowsy .smile{transform:translateX(-50%) scale(.75)}
+  .momo.drowsy .ear.l{transform:rotate(-40deg) translateY(2px)}
+  .momo.drowsy .ear.r{transform:rotate(40deg) scaleX(-1) translateY(2px)}
+  .momo.sleepy{animation:mo-breathe 3.8s ease-in-out infinite}
+  .momo.sleepy .eye,.momo.sleepy .iris,.momo.sleepy .shn{opacity:0}
+  .momo.sleepy .lash{opacity:1}
+  .momo.sleepy .blush{opacity:.55}
+  .momo.sleepy .curl{opacity:0}
+  .momo.sleepy .smile{animation:mo-puff 3.8s ease-in-out infinite}
+  .momo.sleepy .ear.l{transform:rotate(-48deg) translateY(4px)}
+  .momo.sleepy .ear.r{transform:rotate(48deg) scaleX(-1) translateY(4px)}
+  .momo.sleepy .tail{transform:rotate(58deg) translateX(-26px)}
+  .momo.sleepy .zzz{animation:mo-zzz 3.8s ease-in-out infinite}
+  .momo.waking{animation:mo-startle 1s cubic-bezier(.34,1.56,.64,1) 1}
+  .momo.waking .lash{opacity:0}
+  .momo.waking .eye,.momo.waking .iris,.momo.waking .shn{opacity:1;
+    animation:mo-popin .45s cubic-bezier(.34,1.56,.64,1) 1}
+  .momo.waking .blush{opacity:.65}
+  .momo.waking .ear.l{animation:mo-earpl .8s ease-out 1 forwards}
+  .momo.waking .ear.r{animation:mo-earpr .8s ease-out 1 forwards}
+  .momo.waking .tail{animation:mo-tailup .8s ease-out 1 forwards}
+  .momo.reading{animation:mo-study 3.6s ease-in-out infinite}
+  .momo.reading .eye,.momo.reading .iris,.momo.reading .shn{opacity:1}
+  .momo.reading .blush{opacity:.65}
+  .momo.reading .tail{animation:mo-swish 3.6s ease-in-out infinite}
+  .momo.reading .paw.r{animation:mo-tap 1.2s ease-in-out infinite}
+  .momo.reading .iris{animation:mo-scan 3.6s ease-in-out infinite}
+  @keyframes mo-hop{0%,100%{transform:scale(.62) translateY(0)}
+    36%{transform:scale(.62) translateY(-12px) rotate(-2deg)}
+    58%{transform:scale(.65,.59) translateY(0)}72%{transform:scale(.62)}}
+  @keyframes mo-wag{0%,100%{transform:rotate(10deg)}45%{transform:rotate(32deg)}}
+  @keyframes mo-pawl{0%,100%{transform:rotate(0) translateY(0)}38%{transform:rotate(-14deg) translateY(-4px)}}
+  @keyframes mo-pawr{0%,100%{transform:rotate(0) translateY(0)}38%{transform:rotate(14deg) translateY(-4px)}}
+  @keyframes mo-breathe{0%,100%{transform:scale(.62)}50%{transform:scale(.64,.6)}}
+  @keyframes mo-puff{0%,100%{transform:translateX(-50%) scale(.62)}50%{transform:translateX(-50%) scale(.74)}}
+  @keyframes mo-zzz{0%{opacity:0;transform:translate(0,7px) scale(.7)}
+    28%{opacity:.95}72%,100%{opacity:0;transform:translate(12px,-20px) scale(1.2)}}
+  @keyframes mo-startle{0%{transform:scale(.62)}
+    28%{transform:scale(.58,.68) translateY(-17px) rotate(3deg)}
+    56%{transform:scale(.67,.57) translateY(0)}
+    78%{transform:scale(.62) translateY(-4px)}100%{transform:scale(.62) translateY(0)}}
+  @keyframes mo-popin{0%{transform:scale(.2)}70%{transform:scale(1.18)}100%{transform:scale(1)}}
+  @keyframes mo-earpl{0%{transform:rotate(-48deg) translateY(4px)}
+    55%{transform:rotate(-22deg)}100%{transform:rotate(-32deg)}}
+  @keyframes mo-earpr{0%{transform:rotate(48deg) scaleX(-1) translateY(4px)}
+    55%{transform:rotate(22deg) scaleX(-1)}100%{transform:rotate(32deg) scaleX(-1)}}
+  @keyframes mo-tailup{0%{transform:rotate(58deg) translateX(-26px)}
+    60%{transform:rotate(4deg)}100%{transform:rotate(16deg)}}
+  @keyframes mo-study{0%,100%{transform:scale(.62) rotate(-6deg)}50%{transform:scale(.62) rotate(7deg)}}
+  @keyframes mo-swish{0%,100%{transform:rotate(8deg)}50%{transform:rotate(24deg)}}
+  @keyframes mo-tap{0%,100%{transform:translateY(0)}45%{transform:translateY(-7px)}}
+  @keyframes mo-scan{0%,100%{transform:translateX(0)}30%{transform:translateX(2.5px)}65%{transform:translateX(-2.5px)}}
 </style>
 </head>
 <body>
@@ -147,6 +284,74 @@ const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const state = { rows:[], msgs:[], me:null, admin:false, mode:'ask', ask:'explain', who:'human', draft:null, busy:false, error:'', poked:{}, linkSent:null };
 window.setAsk = v => { state.ask = v; state.error=''; render(); };
 window.setWho = v => { state.who = v; state.error=''; render(); };
+
+/* ---------------- momo ---------------- */
+let momoBusyUntil = 0;
+function momoIdleState(){
+  const h = new Date().getHours();
+  if(h >= 22 || h < 6) return 'sleepy';   // in bed 10pm–6am
+  if(h >= 21) return 'drowsy';            // winding down from 9pm
+  return 'happy';
+}
+function momoCaption(s){
+  return {
+    happy: "momo's up",
+    drowsy: 'getting ready for bed…',
+    sleepy: "asleep — send something and he'll wake up",
+    waking: '…hm?!',
+    reading: 'momo is reading it…'
+  }[s];
+}
+function momoSet(s){
+  const e = document.getElementById('momoEl');
+  const c = document.getElementById('momoCap');
+  if(e) e.className = 'momo ' + s;
+  if(c) c.textContent = momoCaption(s);
+}
+function momoRefresh(){
+  if(Date.now() < momoBusyUntil) return;
+  momoSet(momoIdleState());
+}
+window.momoRead = function(){
+  momoBusyUntil = Date.now() + 7000;
+  if(momoIdleState() === 'sleepy'){
+    momoSet('waking');
+    setTimeout(() => momoSet('reading'), 1000);
+  } else {
+    momoSet('reading');
+  }
+  setTimeout(() => { momoBusyUntil = 0; momoRefresh(); }, 7000);
+};
+setInterval(momoRefresh, 30000);
+function momoDock(){
+  const s = Date.now() < momoBusyUntil ? 'reading' : momoIdleState();
+  return `<div class="momo-dock">
+    <div class="momo ${s}" id="momoEl" onclick="momoRead()">
+      <span class="zzz">z</span>
+      <span class="tail"><i class="base"><i class="st st1"></i><i class="st st2"></i><i class="st st3"></i></i></span>
+      <span class="bod"></span>
+      <span class="ear l"><i></i></span><span class="ear r"><i></i></span>
+      <span class="hed"></span>
+      <span class="patch l"></span><span class="patch r"></span>
+      <span class="muzzle"></span>
+      <span class="brow l"></span><span class="brow r"></span>
+      <span class="paw l"><i></i></span><span class="paw r"><i></i></span>
+      <span class="face">
+        <span class="eye l"></span><span class="eye r"></span>
+        <span class="iris l"></span><span class="iris r"></span>
+        <span class="shn a la"></span><span class="shn b lb"></span>
+        <span class="shn a ra"></span><span class="shn b rb"></span>
+        <span class="arc l"></span><span class="arc r"></span>
+        <span class="lash l"></span><span class="lash r"></span>
+        <span class="blush l"></span><span class="blush r"></span>
+        <span class="nose"><i></i></span>
+        <span class="smile"><i></i></span>
+        <span class="curl l"></span><span class="curl r"></span>
+      </span>
+    </div>
+  </div>
+  <div class="momo-cap" id="momoCap">${momoCaption(s)}</div>`;
+}
 window.state = state;
 
 const app = document.getElementById('app');
@@ -261,6 +466,7 @@ window.sendMsg = async function(id, role){
   box.value = '';
   const t = state.rows.find(x => x.id === id);
   if(role === 'asker' && t && t.answer_by === 'ai_now'){
+    momoRead();
     fetch(CHAT_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ ticket_id: id }) })
       .then(() => setTimeout(load, 1500))
       .catch(e => console.error('chat call failed', e));
@@ -371,6 +577,7 @@ async function submit(){
     }).select('id').single();
     if(error) throw new Error('The ticket did not save. Try again.');
     if(state.who === 'ai_now' && made){
+      momoRead();
       fetch(EXPLAIN_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ id: made.id }) })
         .then(() => setTimeout(load, 1500))
         .catch(e => console.error('explain call failed', e));
@@ -431,13 +638,13 @@ function askPanel(){
     <p class="eyebrow" style="margin-top:20px">Who answers</p>
     <div class="modes">
       <button type="button" class="mode ${state.who==='human'?'on':''}" onclick="setWho('human')">Wait for a person</button>
-      <button type="button" class="mode ${state.who==='ai_now'?'on mint':''}" onclick="setWho('ai_now')">Answer now</button>
+      <button type="button" class="mode ${state.who==='ai_now'?'on mint':''}" onclick="setWho('ai_now')">Ask momo</button>
     </div>
     <button class="go" id="goBtn" ${state.busy?'disabled':''}>Send it in</button>
     ${state.error ? `<div class="err">${esc(state.error)}</div>` : ''}
     <p class="note">${state.who==='ai_now'
-      ? 'The machine reads it straight away and keeps answering your follow-ups. A person can still step in later.'
-      : 'A person answers first. If nobody gets to it in five minutes, the machine reads it for you.'}</p>
+      ? 'momo reads it straight away and keeps answering your follow-ups. A person can still step in later.'
+      : 'A person answers first. If nobody gets to it in five minutes, momo reads it for you.'}</p>
   </section>`;
 }
 
@@ -453,7 +660,7 @@ function threadBlock(t, desk){
   const msgs = threadFor(t.id);
   const rows = msgs.map(m => {
     const mine = m.role === (desk ? 'desk' : 'asker');
-    const who = m.role === 'desk' ? OWNER_NAME : (m.role === 'ai' ? 'the machine' : (t.handle || 'them'));
+    const who = m.role === 'desk' ? OWNER_NAME : (m.role === 'ai' ? 'momo' : (t.handle || 'them'));
     return `<div class="msg ${m.role==='desk'?'from-desk':'from-asker'}">
       <div class="msg-who">${esc(who)} · ${agoStr(m.created_at)}</div>
       <p>${esc(m.body)}</p>
@@ -473,16 +680,16 @@ function ticketCard(t, desk){
   if(t.status === 'answered'){
     const human = t.answered_by === 'human';
     bottom = `<div class="answer ${human?'human':'robot'}">
-        <div class="who"><span class="dot"></span>${human ? 'Explained by ' + OWNER_NAME : 'Read by the machine'} · ${agoStr(t.answered_at)}</div>
+        <div class="who"><span class="dot"></span>${human ? 'Explained by ' + OWNER_NAME : 'Read by momo'} · ${agoStr(t.answered_at)}</div>
         <p>${esc(t.answer)}</p>
       </div>
       ${!human && desk ? `<div><textarea id="r_${t.id}" rows="3" placeholder="Say it properly…" style="margin-top:12px"></textarea><button class="send" onclick="sendReply('${t.id}')">Replace with my answer</button></div>` : ''}
       ${threadBlock(t, desk)}`;
   }else if(t.status === 'reading'){
-    bottom = `<div class="answer robot"><div class="who"><span class="dot"></span>The machine is reading it…</div></div>`;
+    bottom = `<div class="answer robot"><div class="who"><span class="dot"></span>momo is reading it…</div></div>`;
   }else{
     bottom = (t.answer_by === 'ai_now'
-      ? `<div class="answer robot"><div class="who"><span class="dot"></span>The machine is reading it…</div></div>`
+      ? `<div class="answer robot"><div class="who"><span class="dot"></span>momo is reading it…</div></div>`
       : meter(t))
       + (desk ? `<div><textarea id="r_${t.id}" rows="3" placeholder="Explain it…" style="margin-top:12px"></textarea><button class="send" onclick="sendReply('${t.id}')">Send explanation</button></div>` : '');
   }
@@ -554,7 +761,7 @@ function render(){
     tagline.textContent = 'send a post · get it explained';
     modeBtn.textContent = 'The desk';
     const mine = state.rows.filter(t => t.owner === state.me);
-    app.innerHTML = askPanel() +
+    app.innerHTML = momoDock() + askPanel() +
       `<div id="mine"><h2 class="sec">Your tickets</h2>` +
       (mine.length ? mine.map(t => ticketCard(t,false)).join('')
                    : `<div class="empty">Nothing sent yet.<br>Paste a link up top and it lands here.</div>`) + `</div>`;
